@@ -1,0 +1,25 @@
+name: linters
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_call:
+
+jobs:
+  linters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: black
+        run: make black
+      - name: flake8
+        run: make flake8
+      - name: ruff
+        run: make ruff

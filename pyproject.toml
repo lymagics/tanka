@@ -1,0 +1,84 @@
+[project]
+name = "tanka"
+dynamic = ["version"]
+description = "True object-oriented Python web framework."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Viacheslav Lymanskyi" }]
+requires-python = ">=3.11"
+dependencies = [
+    "parse>=1.22.1",
+    "plum-dispatch>=2.10.1",
+]
+
+[project.optional-dependencies]
+uvicorn = ["uvicorn>=0.52.4"]
+hypercorn = ["hypercorn>=0.18.0"]
+reload = ["watchfiles>=1.2.0"]
+openapi = ["openapi-core>=0.23.1"]
+all = ["tanka[uvicorn,hypercorn,reload,openapi]"]
+
+[dependency-groups]
+dev = [
+    "black>=26.5.1",
+    "flake8>=7.3.0",
+    "ruff>=0.16.6",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "pytest-randomly>=5.0.0",
+    "pytest-fail-slow>=0.6.0",
+    "pytest-repeat>=0.9.4",
+    "pyhamcrest>=2.1.0",
+    "hypothesis>=6.167.1",
+    "httpx>=0.28.1",
+    "tanka[all]",
+]
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+fallback_version = "0.0.0"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tanka"]
+
+[tool.uv]
+package = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "online: tests that need internet access",
+    "deep: integration tests with live servers",
+]
+
+[tool.coverage.run]
+source = ["tanka"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+
+[tool.black]
+line-length = 79
+target-version = ["py311", "py312", "py313"]
+
+[tool.ruff]
+line-length = 79
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+# F811: plum-dispatch overloads redefine the same method name on purpose.
+ignore = ["F811"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["tanka", "fakes"]
