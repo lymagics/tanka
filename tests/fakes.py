@@ -7,6 +7,7 @@ from tanka.endpoint import Endpoint
 from tanka.identity import Identity
 from tanka.request import Request
 from tanka.response import Reply, Response
+from tanka.templates import Templates
 
 
 class Fixed(Endpoint):
@@ -60,3 +61,16 @@ class Notebook(Log):
 
     def write(self, message: str) -> None:
         self.lines.append(message)
+
+
+class Braces(Templates):
+    async def markup(self, name: str, values: dict) -> str:
+        return name.format(**values)
+
+
+class Record:
+    def __init__(self, fields: dict):
+        self.fields = fields
+
+    async def json(self) -> dict:
+        return self.fields

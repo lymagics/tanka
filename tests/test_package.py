@@ -11,6 +11,14 @@ def test_exports_open_api_lazily():
     )
 
 
+def test_exports_jinja_lazily():
+    assert_that(
+        tanka.Jinja.__name__,
+        equal_to("Jinja"),
+        "Package must expose Jinja without importing it eagerly",
+    )
+
+
 def test_rejects_unknown_attribute():
     assert_that(
         calling(getattr).with_args(tanka, "Teapot"),

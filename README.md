@@ -59,17 +59,18 @@ asyncio.run(
 7. [Request](#7-request)
 8. [Response](#8-response)
 9. [Bodies](#9-bodies)
-10. [Static Files](#10-static-files)
-11. [Cookies](#11-cookies)
-12. [Flash Messages](#12-flash-messages)
-13. [Authentication and Authorization](#13-authentication-and-authorization)
-14. [Error Handling](#14-error-handling)
-15. [CORS](#15-cors)
-16. [OpenAPI](#16-openapi)
-17. [Logging](#17-logging)
-18. [Testing Your Application](#18-testing-your-application)
-19. [How It All Fits Together](#19-how-it-all-fits-together)
-20. [Development](#20-development)
+10. [Templates](#10-templates)
+11. [Static Files](#11-static-files)
+12. [Cookies](#12-cookies)
+13. [Flash Messages](#13-flash-messages)
+14. [Authentication and Authorization](#14-authentication-and-authorization)
+15. [Error Handling](#15-error-handling)
+16. [CORS](#16-cors)
+17. [OpenAPI](#17-openapi)
+18. [Logging](#18-logging)
+19. [Testing Your Application](#19-testing-your-application)
+20. [How It All Fits Together](#20-how-it-all-fits-together)
+21. [Development](#21-development)
 
 ---
 
@@ -96,6 +97,7 @@ Optional extras add integrations, for example `uv add "tanka[uvicorn]"` or
 | `tanka[hypercorn]`   | `Hypercorn` server                             |
 | `tanka[reload]`      | `Reload()` hot reload through `watchfiles`     |
 | `tanka[openapi]`     | `OpenApi` validation through `openapi-core`    |
+| `tanka[jinja]`       | `Jinja` templates through `jinja2`             |
 | `tanka[all]`         | Everything above                               |
 
 ---
@@ -111,6 +113,7 @@ Optional extras add integrations, for example `uv add "tanka[uvicorn]"` or
 | Request    | The incoming HTTP message                               | `request.target().path()`, `await request.body().json()`   |
 | Reply      | The outgoing HTTP message interface                     | `Response(...)`, `Redirect(...)`, `WithCookie(...)`        |
 | Body       | The payload of a message                                | `Html(...)`, `Json(...)`, `File(...)`, `Stream(...)`       |
+| Template   | A named template that renders a `Context` into `Html`   | `Template(Jinja("./templates"), "index.html")`             |
 | Middleware | An endpoint that wraps another endpoint                 | `Authenticated(...)`, `Catch(...)`, `OpenApi(...)`         |
 | Identity   | Who is making the request                               | `Principal("42", "admin")`, `Anonymous()`                  |
 | Abort      | The one exception that ends a request with a status     | `raise Abort(404, "User not found")`                       |
@@ -371,7 +374,129 @@ Every body contributes its own headers, such as `content-type` and
 
 ---
 
-## 10. Static Files
+## 10. Templates
+
+`Template` renders a named template into an `Html` body. The engine behind
+it implements `Templates`. `Jinja` is the engine that ships with Tanka. It
+needs the `jinja` extra.
+
+```python
+from tanka import Context, Jinja, Pair, Template
+
+templates = Jinja("./templates")
+```
+
+`Context` is an immutable collection of named values. `Pair` names one of
+them.
+
+```python
+Response(
+    200,
+    await Template(templates, "account.html").html(
+        Context(
+            Pair("user", user),
+            Pair("title", "Account"),
+            Pair("page", 1),
+        )
+    ),
+)
+```
+
+### Domain objects
+
+Tanka does not hand arbitrary objects to the engine. A value with an
+`async def json(self) -> dict` is replaced by that `dict` before rendering,
+so `account.html` reads `{{ user.name }}`. Plain values such as `str`,
+`int` and `dict` pass through unchanged. The capability is structural: your
+own `JsonReadable` base class works without inheriting anything from Tanka.
+
+```python
+class User:
+    def __init__(self, id: str, name: str):
+        self.id = id
+        self.name = name
+
+    async def json(self) -> dict:
+        return {"id": self.id, "name": self.name}
+```
+
+### Example endpoint
+
+```python
+from tanka import (
+    Context,
+    Endpoint,
+    Get,
+    Jinja,
+    Pair,
+    Reply,
+    Request,
+    Response,
+    Route,
+    Routes,
+    Tanka,
+    Template,
+    Templates,
+)
+
+
+class Index(Endpoint):
+    def __init__(self, templates: Templates):
+        self.templates = templates
+
+    async def response(self, request: Request) -> Reply:
+        return Response(
+            200,
+            await Template(self.templates, "index.html").html(
+                Context(
+                    Pair("title", "Welcome"),
+                    Pair("page", 1),
+                )
+            ),
+        )
+
+
+templates = Jinja("./templates")
+app = Tanka(
+    Routes(
+        Route(Get(), "/", Index(templates)),
+    ),
+)
+```
+
+With `templates/index.html`:
+
+```html
+<h1>{{ title }}</h1>
+<p>Page {{ page }}</p>
+```
+
+`GET /` returns `200` with `content-type: text/html; charset=utf-8` and the
+rendered markup as the body.
+
+### Jinja
+
+`Jinja(directory)` loads templates from a folder and escapes values in
+`.html`, `.htm` and `.xml` templates. A missing or broken template raises an
+`Exception` chained from the engine error, which ends the request with
+`500`. Pass a ready `jinja2.Environment` instead of a directory when you
+need custom filters or another loader.
+
+```python
+Jinja(Environment(loader=PackageLoader("myapp"), autoescape=True))
+```
+
+Other engines implement `Templates` without touching `Template`.
+
+```python
+class Mako(Templates):
+    async def markup(self, name: str, values: dict) -> str:
+        ...
+```
+
+---
+
+## 11. Static Files
 
 `Static` serves files from a `Files` source. `Directory` is the source for a
 local folder. Combine it with `Mount` so paths are relative to the folder.
@@ -398,7 +523,7 @@ class S3Bucket(Files):
 
 ---
 
-## 11. Cookies
+## 12. Cookies
 
 ### Reading
 
@@ -436,7 +561,7 @@ Several cookies are set by nesting `WithCookie`.
 
 ---
 
-## 12. Flash Messages
+## 13. Flash Messages
 
 A flash message travels to the next page through a cookie.
 
@@ -466,7 +591,7 @@ class UsersPage(Endpoint):
 
 ---
 
-## 13. Authentication and Authorization
+## 14. Authentication and Authorization
 
 Both are middleware: endpoints that wrap another endpoint.
 
@@ -546,7 +671,7 @@ class Verified(Requirement):
 
 ---
 
-## 14. Error Handling
+## 15. Error Handling
 
 ### Abort
 
@@ -624,7 +749,7 @@ the same way whatever the error was.
 
 ---
 
-## 15. CORS
+## 16. CORS
 
 `Cors` wraps an endpoint with a set of policies. Preflight requests are
 answered without reaching the wrapped endpoint.
@@ -650,7 +775,7 @@ Tanka(
 
 ---
 
-## 16. OpenAPI
+## 17. OpenAPI
 
 `OpenApi` wraps an endpoint with an OpenAPI specification file (YAML or
 JSON). It needs the `openapi` extra.
@@ -686,7 +811,7 @@ endpoint itself stays unaware of validation.
 
 ---
 
-## 17. Logging
+## 18. Logging
 
 Unhandled exceptions are logged with their traceback before the `500` page
 is sent. `Tanka` logs through the standard `logging` module under the
@@ -699,7 +824,7 @@ Tanka(routes, Silence())               # nothing, handy in tests
 
 ---
 
-## 18. Testing Your Application
+## 19. Testing Your Application
 
 Endpoints are plain objects. Call them with a hand-made `Request`.
 
@@ -727,7 +852,7 @@ interfaces, such as a fake `IdentitySource` or a fake `Files`.
 
 ---
 
-## 19. How It All Fits Together
+## 20. How It All Fits Together
 
 Every piece of Tanka is an `Endpoint` or wraps one. An application is a tree
 where each layer adds one concern and delegates the rest inward.
@@ -757,7 +882,7 @@ and change by swapping or wrapping one object at a time.
 
 ---
 
-## 20. Development
+## 21. Development
 
 ```shell
 uv sync
