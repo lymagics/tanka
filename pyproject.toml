@@ -16,7 +16,8 @@ uvicorn = ["uvicorn>=0.52.4"]
 hypercorn = ["hypercorn>=0.18.0"]
 reload = ["watchfiles>=1.2.0"]
 openapi = ["openapi-core>=0.23.1"]
-all = ["tanka[uvicorn,hypercorn,reload,openapi]"]
+jinja = ["jinja2>=3.1.6"]
+all = ["tanka[uvicorn,hypercorn,reload,openapi,jinja]"]
 
 [dependency-groups]
 dev = [

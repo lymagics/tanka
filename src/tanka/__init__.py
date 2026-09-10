@@ -1,3 +1,4 @@
+import importlib
 from typing import Any
 
 from tanka.abort import Abort, Status
@@ -89,6 +90,7 @@ from tanka.routes import Mount, Route, Routes, Rule
 from tanka.server import Hypercorn, Once, Reload, Server, Uvicorn, Watch
 from tanka.static import Directory, Files, Static
 from tanka.target import Path, Query, Target
+from tanka.templates import Context, JsonReadable, Pair, Template, Templates
 
 __all__ = [
     "Abort",
@@ -110,6 +112,7 @@ __all__ = [
     "Catch",
     "Code",
     "Codes",
+    "Context",
     "Cookie",
     "CookiePath",
     "Cookies",
@@ -139,7 +142,9 @@ __all__ = [
     "Identity",
     "IdentitySource",
     "Indifferent",
+    "Jinja",
     "Json",
+    "JsonReadable",
     "Kind",
     "Lifetime",
     "Listed",
@@ -155,6 +160,7 @@ __all__ = [
     "Once",
     "OpenApi",
     "Options",
+    "Pair",
     "Patch",
     "Path",
     "Policy",
@@ -187,6 +193,8 @@ __all__ = [
     "Success",
     "Tanka",
     "Target",
+    "Template",
+    "Templates",
     "Text",
     "Uvicorn",
     "Verb",
@@ -198,8 +206,7 @@ __all__ = [
 
 
 def __getattr__(name: str) -> Any:
-    if name != "OpenApi":
+    modules = {"OpenApi": "tanka.openapi", "Jinja": "tanka.jinja"}
+    if name not in modules:
         raise AttributeError(f"module 'tanka' has no attribute '{name}'")
-    from tanka.openapi import OpenApi
-
-    return OpenApi
+    return getattr(importlib.import_module(modules[name]), name)
