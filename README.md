@@ -771,7 +771,12 @@ Tanka(
 )
 ```
 
-`AllowOrigins("*")` allows every origin.
+`AllowOrigins("*")` allows every origin. Browsers never accept a wildcard
+origin together with credentials, so `Cors` refuses that combination: a
+cross-origin request answered with both `AllowOrigins("*")` and
+`AllowCredentials()` raises an `Exception` instead of sending headers that
+would fail silently in the browser. List the allowed origins explicitly when
+credentials are needed.
 
 ---
 

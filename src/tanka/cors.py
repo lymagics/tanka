@@ -117,10 +117,18 @@ class Cors(Endpoint):
         return result
 
     def _headers(self, request: Request) -> Headers:
-        return Headers(
+        result = Headers(
             [
                 pair
                 for policy in self.policies
                 for pair in policy.headers(request)
             ]
         )
+        if "*" in result.values(
+            "access-control-allow-origin"
+        ) and "true" in result.values("access-control-allow-credentials"):
+            raise Exception(
+                "Browsers reject a wildcard origin together with credentials;"
+                " list the allowed origins explicitly instead of '*'"
+            )
+        return result
