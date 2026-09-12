@@ -9,11 +9,12 @@ from hamcrest import (
     contains_string,
     equal_to,
     has_entry,
+    has_length,
     has_properties,
     raises,
 )
 
-from fakes import Echo, Fixed
+from fakes import Echo, Fixed, Tally
 from tanka.abort import Abort
 from tanka.body import Body, Empty, Json, Text
 from tanka.endpoint import Endpoint
@@ -260,6 +261,19 @@ async def test_reads_path_parameter_from_matched_template():
         ).status(),
         equal_to(200),
         "OpenApi must keep the path parameters it matched for validation",
+    )
+
+
+async def test_builds_specification_once_for_repeated_requests():
+    hits: list[int] = []
+    endpoint = OpenApi(Tally(specification("Cached"), hits), Created())
+    await endpoint.response(posted('{"name": "Dee"}'))
+    await endpoint.response(posted('{"name": "Eve"}'))
+    await endpoint.response(posted('{"name": "Fay"}'))
+    assert_that(
+        hits,
+        has_length(1),
+        "OpenApi must build the validation model once and reuse it",
     )
 
 
