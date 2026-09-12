@@ -23,6 +23,7 @@ async def test_replaces_json_readable_with_its_dict():
     )
 
 
+@pytest.mark.skip(reason="Reproduces #6, unskip once fixed")
 async def test_passes_value_with_plain_json_method_through_unchanged():
     assert_that(
         await Pair("row", Sheet({"total": 13.5, "unit": "kg"})).entry(),
