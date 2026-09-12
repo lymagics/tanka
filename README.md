@@ -71,6 +71,7 @@ asyncio.run(
 19. [Testing Your Application](#19-testing-your-application)
 20. [How It All Fits Together](#20-how-it-all-fits-together)
 21. [Development](#21-development)
+22. [How to Report Issues](#22-how-to-report-issues)
 
 ---
 
@@ -899,3 +900,34 @@ make help
 | `make unit`   | Unit tests with coverage                    |
 | `make deep`   | Integration tests against live servers      |
 | `make lint`   | black, flake8 and ruff                      |
+
+---
+
+## 22. How to Report Issues
+
+### Enhancements
+
+Open a GitHub issue and label it `enhancement`. Describe the desired
+behaviour and why it is useful. No code is required.
+
+### Bugs in Code
+
+Open a pull request, not an issue. The pull request must contain a test that
+reproduces the bug and fails against the current code. Mark the test as
+disabled with `pytest.mark.skip` and a short reason, so CI stays green while
+the failing case is on record:
+
+```python
+@pytest.mark.skip(reason="Reproduces #6, unskip once fixed")
+async def test_passes_value_with_plain_json_method_through_unchanged():
+    ...
+```
+
+The fix, if any, can arrive in the same or a follow-up pull request, which
+removes the skip. Contributors without push rights fork the repository first.
+
+### Bugs Outside Code
+
+If the bug cannot be reproduced with a test (documentation, packaging, CI
+configuration, and so on), open a GitHub issue and label it `bug`. Describe
+the expected and actual behaviour and how to observe it.
