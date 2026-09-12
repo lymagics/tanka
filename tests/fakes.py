@@ -87,3 +87,11 @@ class Record:
 
     async def json(self) -> dict:
         return self.fields
+
+
+class Sheet:
+    def __init__(self, cells: dict):
+        self.cells = cells
+
+    def json(self) -> dict:
+        return self.cells
