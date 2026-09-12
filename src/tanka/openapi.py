@@ -1,3 +1,4 @@
+from functools import lru_cache
 from urllib.parse import parse_qsl
 
 import yaml
@@ -148,7 +149,7 @@ class OpenApi(Endpoint):
             ),
             request.identity(),
         )
-        core = OpenAPI.from_dict({**self.document, "servers": [{"url": "/"}]})
+        core = self._core()
         described = self._checked(core, CoreRequest(buffered, data))
         reply = await self.origin.response(buffered)
         if described:
@@ -158,6 +159,10 @@ class OpenApi(Endpoint):
                 reply,
             )
         return reply
+
+    @lru_cache  # noqa: B019
+    def _core(self) -> OpenAPI:
+        return OpenAPI.from_dict({**self.document, "servers": [{"url": "/"}]})
 
     def _checked(self, core: OpenAPI, request: CoreRequest) -> bool:
         described = True

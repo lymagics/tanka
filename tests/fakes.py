@@ -68,6 +68,19 @@ class Braces(Templates):
         return name.format(**values)
 
 
+class Tally(dict):
+    def __init__(self, content: dict, hits: list[int]):
+        super().__init__(content)
+        self.hits = hits
+
+    def __iter__(self):
+        return super().__iter__()
+
+    def keys(self):
+        self.hits.append(1)
+        return super().keys()
+
+
 class Record:
     def __init__(self, fields: dict):
         self.fields = fields
