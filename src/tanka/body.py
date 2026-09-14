@@ -39,12 +39,12 @@ class Body(ABC):
 
         def _charset(self) -> str:
             found = [
-                part.strip()[8:]
+                part.strip()[8:].strip()
                 for value in self.origin.headers().values("content-type")
                 for part in value.split(";")
                 if part.strip().lower().startswith("charset=")
             ]
-            return found[0] if found else "utf-8"
+            return next((name for name in found if name), "utf-8")
 
 
 Body.register(Body.Smart)
