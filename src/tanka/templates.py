@@ -1,3 +1,4 @@
+import inspect
 from abc import ABC, abstractmethod
 from typing import Any, Protocol, runtime_checkable
 
@@ -22,7 +23,10 @@ class Pair:
 
     async def entry(self) -> tuple[str, Any]:
         found = self.value
-        if isinstance(found, JsonReadable):
+        readable = isinstance(
+            found, JsonReadable
+        ) and inspect.iscoroutinefunction(found.json)
+        if readable:
             found = await found.json()
         return self.name, found
 
