@@ -29,6 +29,16 @@ async def test_decodes_text_as_utf8_by_default():
     )
 
 
+async def test_decodes_text_as_utf8_when_charset_parameter_is_empty():
+    assert_that(
+        await Body.Smart(
+            Raw("café".encode(), "text/plain; charset=")
+        ).text(),
+        equal_to("café"),
+        "Smart body must default to UTF-8 when charset parameter is empty",
+    )
+
+
 async def test_parses_json():
     assert_that(
         await Body.Smart(Text('{"answer": 42, "ok": true}')).json(),
