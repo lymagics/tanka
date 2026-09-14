@@ -2,6 +2,7 @@ import asyncio
 import json
 import mimetypes
 import os
+import zlib
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, AsyncIterator
 from typing import Any
@@ -156,3 +157,27 @@ class File(Body):
         with handle:
             while chunk := await asyncio.to_thread(handle.read, 65536):
                 yield chunk
+
+
+class Gzipped(Body):
+    def __init__(self, origin: Body):
+        self.origin = origin
+
+    def headers(self) -> Headers:
+        return Headers(
+            [
+                *[
+                    pair
+                    for pair in self.origin.headers()
+                    if pair[0].lower() != "content-length"
+                ],
+                ("content-encoding", "gzip"),
+            ]
+        )
+
+    async def chunks(self) -> AsyncIterator[bytes]:
+        engine = zlib.compressobj(wbits=31)
+        async for chunk in self.origin.chunks():
+            if piece := engine.compress(chunk):
+                yield piece
+        yield engine.flush()

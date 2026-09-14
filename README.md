@@ -66,12 +66,13 @@ asyncio.run(
 14. [Authentication and Authorization](#14-authentication-and-authorization)
 15. [Error Handling](#15-error-handling)
 16. [CORS](#16-cors)
-17. [OpenAPI](#17-openapi)
-18. [Logging](#18-logging)
-19. [Testing Your Application](#19-testing-your-application)
-20. [How It All Fits Together](#20-how-it-all-fits-together)
-21. [Development](#21-development)
-22. [How to Report Issues](#22-how-to-report-issues)
+17. [Compression](#17-compression)
+18. [OpenAPI](#18-openapi)
+19. [Logging](#19-logging)
+20. [Testing Your Application](#20-testing-your-application)
+21. [How It All Fits Together](#21-how-it-all-fits-together)
+22. [Development](#22-development)
+23. [How to Report Issues](#23-how-to-report-issues)
 
 ---
 
@@ -115,7 +116,7 @@ Optional extras add integrations, for example `uv add "tanka[uvicorn]"` or
 | Reply      | The outgoing HTTP message interface                     | `Response(...)`, `Redirect(...)`, `WithCookie(...)`        |
 | Body       | The payload of a message                                | `Html(...)`, `Json(...)`, `File(...)`, `Stream(...)`       |
 | Template   | A named template that renders a `Context` into `Html`   | `Template(Jinja("./templates"), "index.html")`             |
-| Middleware | An endpoint that wraps another endpoint                 | `Authenticated(...)`, `Catch(...)`, `OpenApi(...)`         |
+| Middleware | An endpoint that wraps another endpoint                 | `Authenticated(...)`, `Catch(...)`, `Compressed(...)`      |
 | Identity   | Who is making the request                               | `Principal("42", "admin")`, `Anonymous()`                  |
 | Abort      | The one exception that ends a request with a status     | `raise Abort(404, "User not found")`                       |
 
@@ -781,7 +782,40 @@ credentials are needed.
 
 ---
 
-## 17. OpenAPI
+## 17. Compression
+
+`Compressed` wraps an endpoint and gzips every reply the client is willing
+to accept. Wrap a single route or a whole subtree; the endpoints inside
+know nothing about it.
+
+```python
+Tanka(
+    Compressed(
+        Routes(
+            Route(Get(), "/", Index()),
+            Route(Get(), "/report", Report(...)),
+        ),
+    ),
+)
+```
+
+A reply is compressed when the request carries `accept-encoding` with
+`gzip` (or `*`), the body is at least 500 bytes long and no
+`content-encoding` is set already. Every other reply passes through
+untouched. The second argument changes the minimum size:
+
+```python
+Compressed(Routes(...), 2048)
+```
+
+A compressed reply sends `content-encoding: gzip` and `vary:
+accept-encoding`, drops `content-length` and streams compressed chunks, so
+large files and streams are never buffered in memory. `Gzipped` is the
+body behind it and can be used on its own.
+
+---
+
+## 18. OpenAPI
 
 `OpenApi` wraps an endpoint with an OpenAPI specification file (YAML or
 JSON). It needs the `openapi` extra.
@@ -817,7 +851,7 @@ endpoint itself stays unaware of validation.
 
 ---
 
-## 18. Logging
+## 19. Logging
 
 Unhandled exceptions are logged with their traceback before the `500` page
 is sent. `Tanka` logs through the standard `logging` module under the
@@ -830,7 +864,7 @@ Tanka(routes, Silence())               # nothing, handy in tests
 
 ---
 
-## 19. Testing Your Application
+## 20. Testing Your Application
 
 Endpoints are plain objects. Call them with a hand-made `Request`.
 
@@ -858,7 +892,7 @@ interfaces, such as a fake `IdentitySource` or a fake `Files`.
 
 ---
 
-## 20. How It All Fits Together
+## 21. How It All Fits Together
 
 Every piece of Tanka is an `Endpoint` or wraps one. An application is a tree
 where each layer adds one concern and delegates the rest inward.
@@ -867,11 +901,12 @@ where each layer adds one concern and delegates the rest inward.
 Tanka
 └── Catch                    error pages
     └── Cors                 cross-origin policy
-        └── OpenApi          documentation + validation
-            └── Routes       dispatch by method + path
-                ├── Route → Authenticated → Authorized → AdminPage
-                ├── Mount("/static") → Static(Directory("./public"))
-                └── Mount("/v1") → Routes → ...
+        └── Compressed       gzip bodies
+            └── OpenApi      documentation + validation
+                └── Routes   dispatch by method + path
+                    ├── Route → Authenticated → Authorized → AdminPage
+                    ├── Mount("/static") → Static(Directory("./public"))
+                    └── Mount("/v1") → Routes → ...
 ```
 
 Replies follow the same idea. A plain `Response` is wrapped to add cookies,
@@ -888,7 +923,7 @@ and change by swapping or wrapping one object at a time.
 
 ---
 
-## 21. Development
+## 22. Development
 
 ```shell
 uv sync
@@ -903,7 +938,7 @@ make help
 
 ---
 
-## 22. How to Report Issues
+## 23. How to Report Issues
 
 ### Enhancements
 
