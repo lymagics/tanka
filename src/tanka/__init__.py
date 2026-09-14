@@ -22,7 +22,17 @@ from tanka.auth import (
     Role,
     Roles,
 )
-from tanka.body import Body, Empty, File, Html, Json, Raw, Stream, Text
+from tanka.body import (
+    Body,
+    Empty,
+    File,
+    Gzipped,
+    Html,
+    Json,
+    Raw,
+    Stream,
+    Text,
+)
 from tanka.catch import (
     Catch,
     Code,
@@ -34,6 +44,7 @@ from tanka.catch import (
     On,
     Range,
 )
+from tanka.compression import Compressed
 from tanka.cookies import (
     Attribute,
     Cookie,
@@ -85,7 +96,13 @@ from tanka.method import (
     Verb,
 )
 from tanka.request import Request
-from tanka.response import Redirect, Reply, Response, WithCookie, WithHeaders
+from tanka.response import (
+    Redirect,
+    Reply,
+    Response,
+    WithCookie,
+    WithHeaders,
+)
 from tanka.routes import Mount, Route, Routes, Rule
 from tanka.server import Hypercorn, Once, Reload, Server, Uvicorn, Watch
 from tanka.static import Directory, Files, Static
@@ -112,6 +129,7 @@ __all__ = [
     "Catch",
     "Code",
     "Codes",
+    "Compressed",
     "Context",
     "Cookie",
     "CookiePath",
@@ -134,6 +152,7 @@ __all__ = [
     "Flashes",
     "ForgetCookie",
     "Get",
+    "Gzipped",
     "Head",
     "Headers",
     "Html",
