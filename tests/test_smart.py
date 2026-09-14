@@ -1,4 +1,3 @@
-import pytest
 from hamcrest import assert_that, equal_to, has_entries, instance_of
 
 from tanka.body import Body, Raw, Text
@@ -30,12 +29,6 @@ async def test_decodes_text_as_utf8_by_default():
     )
 
 
-# TODO: Bug: empty charset parameter crashes decode, see
-# https://github.com/lymagics/tanka/pull/16
-@pytest.mark.skip(
-    reason="Reproduces PR #16, unskip once fixed: "
-    "https://github.com/lymagics/tanka/pull/16"
-)
 async def test_decodes_text_as_utf8_when_charset_parameter_is_empty():
     assert_that(
         await Body.Smart(Raw("café".encode(), "text/plain; charset=")).text(),
