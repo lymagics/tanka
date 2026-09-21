@@ -1,3 +1,5 @@
+import asyncio
+
 from tanka.abort import Abort
 from tanka.application import Log
 from tanka.auth import IdentitySource
@@ -95,3 +97,13 @@ class Sheet:
 
     def json(self) -> dict:
         return self.cells
+
+
+class Sleepy(Endpoint):
+    def __init__(self, reply: Reply, seconds: float):
+        self.reply = reply
+        self.seconds = seconds
+
+    async def response(self, request: Request) -> Reply:
+        await asyncio.sleep(self.seconds)
+        return self.reply

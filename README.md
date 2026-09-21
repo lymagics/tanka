@@ -67,12 +67,13 @@ asyncio.run(
 15. [Error Handling](#15-error-handling)
 16. [CORS](#16-cors)
 17. [Compression](#17-compression)
-18. [OpenAPI](#18-openapi)
-19. [Logging](#19-logging)
-20. [Testing Your Application](#20-testing-your-application)
-21. [How It All Fits Together](#21-how-it-all-fits-together)
-22. [Development](#22-development)
-23. [How to Report Issues](#23-how-to-report-issues)
+18. [Timeouts](#18-timeouts)
+19. [OpenAPI](#19-openapi)
+20. [Logging](#20-logging)
+21. [Testing Your Application](#21-testing-your-application)
+22. [How It All Fits Together](#22-how-it-all-fits-together)
+23. [Development](#23-development)
+24. [How to Report Issues](#24-how-to-report-issues)
 
 ---
 
@@ -815,7 +816,37 @@ body behind it and can be used on its own.
 
 ---
 
-## 18. OpenAPI
+## 18. Timeouts
+
+`Timeout` wraps an endpoint and gives it a deadline in seconds. If the
+endpoint does not answer in time, the request ends with `504 Gateway
+Timeout` instead of hanging forever. Wrap a single route or a whole subtree;
+the endpoints inside know nothing about it.
+
+```python
+Route(Get(), "/report", Timeout(SlowReport(...), 5))
+```
+
+```python
+Tanka(
+    Timeout(
+        Routes(
+            Route(Get(), "/", Index()),
+            Route(Get(), "/report", Report(...)),
+        ),
+        30,
+    ),
+)
+```
+
+The wrapped endpoint is cancelled once the deadline is passed, so a stuck
+database call or external request stops consuming the worker. `Timeout`
+raises `Abort(504, ...)`, which `Catch` and `On` handle like any other
+error.
+
+---
+
+## 19. OpenAPI
 
 `OpenApi` wraps an endpoint with an OpenAPI specification file (YAML or
 JSON). It needs the `openapi` extra.
@@ -851,7 +882,7 @@ endpoint itself stays unaware of validation.
 
 ---
 
-## 19. Logging
+## 20. Logging
 
 Unhandled exceptions are logged with their traceback before the `500` page
 is sent. `Tanka` logs through the standard `logging` module under the
@@ -864,7 +895,7 @@ Tanka(routes, Silence())               # nothing, handy in tests
 
 ---
 
-## 20. Testing Your Application
+## 21. Testing Your Application
 
 Endpoints are plain objects. Call them with a hand-made `Request`.
 
@@ -892,21 +923,22 @@ interfaces, such as a fake `IdentitySource` or a fake `Files`.
 
 ---
 
-## 21. How It All Fits Together
+## 22. How It All Fits Together
 
 Every piece of Tanka is an `Endpoint` or wraps one. An application is a tree
 where each layer adds one concern and delegates the rest inward.
 
 ```
 Tanka
-└── Catch                    error pages
-    └── Cors                 cross-origin policy
-        └── Compressed       gzip bodies
-            └── OpenApi      documentation + validation
-                └── Routes   dispatch by method + path
-                    ├── Route → Authenticated → Authorized → AdminPage
-                    ├── Mount("/static") → Static(Directory("./public"))
-                    └── Mount("/v1") → Routes → ...
+└── Catch                      error pages
+    └── Cors                   cross-origin policy
+        └── Compressed         gzip bodies
+            └── Timeout        deadline for every reply
+                └── OpenApi    documentation + validation
+                    └── Routes dispatch by method + path
+                        ├── Route → Authenticated → Authorized → AdminPage
+                        ├── Mount("/static") → Static(Directory("./public"))
+                        └── Mount("/v1") → Routes → ...
 ```
 
 Replies follow the same idea. A plain `Response` is wrapped to add cookies,
@@ -923,7 +955,7 @@ and change by swapping or wrapping one object at a time.
 
 ---
 
-## 22. Development
+## 23. Development
 
 ```shell
 uv sync
@@ -938,7 +970,7 @@ make help
 
 ---
 
-## 23. How to Report Issues
+## 24. How to Report Issues
 
 ### Enhancements
 
