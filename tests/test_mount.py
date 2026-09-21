@@ -43,11 +43,11 @@ def test_rejects_longer_segment():
 
 # TODO: Bug: Mount("/x", Routes(Route(Get(), "/", ...))) 404s on the bare
 # prefix "/x" because stripping leaves an empty path, not "/".
-# See (PR link pending)
+# See https://github.com/lymagics/tanka/pull/24
 @pytest.mark.skip(
     reason='Bug: Mount("/x", Routes(Route(Get(), "/", ...))) 404s on the'
     ' bare prefix "/x" because stripping leaves an empty path, not "/".'
-    " See (PR link pending)"
+    " See https://github.com/lymagics/tanka/pull/24"
 )
 async def test_dispatches_bare_prefix_to_nested_root_route():
     assert_that(
