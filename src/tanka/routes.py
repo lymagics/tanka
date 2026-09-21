@@ -80,7 +80,9 @@ class Mount(Rule):
             Request(
                 request.method(),
                 Target(
-                    Path(str(request.target().path())[len(self.prefix) :]),
+                    Path(
+                        str(request.target().path())[len(self.prefix) :] or "/"
+                    ),
                     request.target().query(),
                 ),
                 request.headers(),
