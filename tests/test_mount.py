@@ -1,6 +1,7 @@
 import json
 
-from hamcrest import assert_that, has_entry, is_
+import pytest
+from hamcrest import assert_that, equal_to, has_entry, is_
 
 from fakes import Echo
 from tanka.body import Body, Empty
@@ -37,6 +38,26 @@ def test_rejects_longer_segment():
         ),
         is_(False),
         "Mount must not match a segment that merely starts with the prefix",
+    )
+
+
+# TODO: Bug: Mount("/x", Routes(Route(Get(), "/", ...))) 404s on the bare
+# prefix "/x" because stripping leaves an empty path, not "/".
+# See (PR link pending)
+@pytest.mark.skip(
+    reason='Bug: Mount("/x", Routes(Route(Get(), "/", ...))) 404s on the'
+    ' bare prefix "/x" because stripping leaves an empty path, not "/".'
+    " See (PR link pending)"
+)
+async def test_dispatches_bare_prefix_to_nested_root_route():
+    assert_that(
+        (
+            await Mount(
+                "/gallery", Routes(Route(Get(), "/", Echo()))
+            ).response(Request(Get(), "/gallery", Headers(), Empty()))
+        ).status(),
+        equal_to(200),
+        "Mount must dispatch its bare prefix to a nested route pattern '/'",
     )
 
 
