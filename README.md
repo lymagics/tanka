@@ -11,6 +11,7 @@
 </p>
 
 [![EO principles respected here](https://www.elegantobjects.org/badge.svg)](https://www.elegantobjects.org)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/tanka?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/tanka)
 
 **True Object-Oriented Python Web Framework.**
 
