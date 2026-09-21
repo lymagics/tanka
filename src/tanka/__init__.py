@@ -108,6 +108,7 @@ from tanka.server import Hypercorn, Once, Reload, Server, Uvicorn, Watch
 from tanka.static import Directory, Files, Static
 from tanka.target import Path, Query, Target
 from tanka.templates import Context, JsonReadable, Pair, Template, Templates
+from tanka.timeout import Timeout
 
 __all__ = [
     "Abort",
@@ -215,6 +216,7 @@ __all__ = [
     "Template",
     "Templates",
     "Text",
+    "Timeout",
     "Uvicorn",
     "Verb",
     "Watch",
