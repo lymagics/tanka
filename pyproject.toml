@@ -21,18 +21,18 @@ all = ["tanka[uvicorn,hypercorn,reload,openapi,jinja]"]
 
 [dependency-groups]
 dev = [
-    "black>=26.5.1",
-    "flake8>=7.3.0",
-    "ruff>=0.16.6",
-    "pytest>=9.1.1",
-    "pytest-asyncio>=1.4.0",
-    "pytest-cov>=7.1.0",
-    "pytest-randomly>=5.0.0",
-    "pytest-fail-slow>=0.6.0",
-    "pytest-repeat>=0.9.4",
-    "pyhamcrest>=2.1.0",
-    "hypothesis>=6.167.1",
-    "httpx>=0.28.1",
+    "black==26.5.1",
+    "flake8==7.4.1",
+    "ruff==0.16.9",
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "pytest-cov==7.1.0",
+    "pytest-randomly==5.0.0",
+    "pytest-fail-slow==0.6.0",
+    "pytest-repeat==0.9.4",
+    "pyhamcrest==2.1.0",
+    "hypothesis==6.168.2",
+    "httpx==0.28.1",
     "tanka[all]",
 ]
 
