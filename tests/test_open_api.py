@@ -3,6 +3,7 @@ import json
 import pathlib
 import shutil
 
+import pytest
 from hamcrest import (
     assert_that,
     calling,
@@ -16,7 +17,7 @@ from hamcrest import (
 
 from fakes import Echo, Fixed, Tally
 from tanka.abort import Abort
-from tanka.body import Body, Empty, Json, Text
+from tanka.body import Body, Empty, Json, Raw, Text
 from tanka.endpoint import Endpoint
 from tanka.headers import Headers
 from tanka.method import Get, Post
@@ -101,6 +102,50 @@ def secured(title: str) -> dict:
                     "security": [{"bearer": []}],
                     "responses": {"200": {"description": "OK"}},
                 }
+            }
+        },
+    }
+
+
+def vendored(title: str) -> dict:
+    return {
+        "openapi": "3.0.3",
+        "info": {"title": title, "version": "1.0.0"},
+        "paths": {
+            "/orders": {
+                "post": {
+                    "requestBody": {
+                        "required": True,
+                        "content": {
+                            "application/vnd.example+json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": ["sku"],
+                                    "properties": {"sku": {"type": "string"}},
+                                }
+                            }
+                        },
+                    },
+                    "responses": {"202": {"description": "Accepted"}},
+                },
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {
+                                "application/vnd.example+json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "required": ["total"],
+                                        "properties": {
+                                            "total": {"type": "integer"}
+                                        },
+                                    }
+                                }
+                            },
+                        }
+                    }
+                },
             }
         },
     }
@@ -292,4 +337,50 @@ async def test_loads_specification_from_file():
         ),
         has_entry("info", has_entry("title", "From File")),
         "OpenApi must load the specification from a file path",
+    )
+
+
+@pytest.mark.skip(
+    reason="Reproduces +json media type rejection, unskip once fixed"
+)
+async def test_passes_valid_request_with_vendor_json_media_type():
+    assert_that(
+        (
+            await OpenApi(
+                vendored("Vendor Request"), Fixed(Response(202, Empty()))
+            ).response(
+                Request(
+                    Post(),
+                    "/orders",
+                    Headers({"content-type": "application/vnd.example+json"}),
+                    Text('{"sku": "ÄX-\\u0000-9"}'),
+                )
+            )
+        ).status(),
+        equal_to(202),
+        "OpenApi must parse a +json request body as JSON",
+    )
+
+
+@pytest.mark.skip(
+    reason="Reproduces +json media type rejection, unskip once fixed"
+)
+async def test_passes_valid_response_with_vendor_json_media_type():
+    assert_that(
+        (
+            await OpenApi(
+                vendored("Vendor Response"),
+                Fixed(
+                    Response(
+                        200,
+                        Raw(
+                            b'{"total": -2147483649}',
+                            "application/vnd.example+json",
+                        ),
+                    )
+                ),
+            ).response(Request(Get(), "/orders", Headers(), Empty()))
+        ).status(),
+        equal_to(200),
+        "OpenApi must parse a +json response body as JSON",
     )
