@@ -3,7 +3,6 @@ import json
 import pathlib
 import shutil
 
-import pytest
 from hamcrest import (
     assert_that,
     calling,
@@ -340,9 +339,6 @@ async def test_loads_specification_from_file():
     )
 
 
-@pytest.mark.skip(
-    reason="Reproduces +json media type rejection, unskip once fixed"
-)
 async def test_passes_valid_request_with_vendor_json_media_type():
     assert_that(
         (
@@ -362,9 +358,6 @@ async def test_passes_valid_request_with_vendor_json_media_type():
     )
 
 
-@pytest.mark.skip(
-    reason="Reproduces +json media type rejection, unskip once fixed"
-)
 async def test_passes_valid_response_with_vendor_json_media_type():
     assert_that(
         (

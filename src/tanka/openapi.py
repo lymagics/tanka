@@ -3,7 +3,9 @@ from urllib.parse import parse_qsl
 
 import yaml
 from openapi_core import OpenAPI
+from openapi_core.configurations import Config
 from openapi_core.datatypes import RequestParameters
+from openapi_core.deserializing.media_types.util import json_loads
 from openapi_core.exceptions import OpenAPIError
 from openapi_core.templating.paths.exceptions import PathError
 from openapi_core.validation.request.exceptions import (
@@ -162,7 +164,28 @@ class OpenApi(Endpoint):
 
     @lru_cache  # noqa: B019
     def _core(self) -> OpenAPI:
-        return OpenAPI.from_dict({**self.document, "servers": [{"url": "/"}]})
+        return OpenAPI.from_dict(
+            {**self.document, "servers": [{"url": "/"}]},
+            config=Config(
+                extra_media_type_deserializers={
+                    kind: json_loads
+                    for kind in self._kinds(self.document)
+                    if kind.split(";")[0].strip().endswith("+json")
+                }
+            ),
+        )
+
+    def _kinds(self, node: object) -> list[str]:
+        kinds: list[str] = []
+        if isinstance(node, dict):
+            content = node.get("content")
+            kinds = [*(content if isinstance(content, dict) else [])]
+            kinds += [
+                kind for value in node.values() for kind in self._kinds(value)
+            ]
+        elif isinstance(node, list):
+            kinds = [kind for item in node for kind in self._kinds(item)]
+        return kinds
 
     def _checked(self, core: OpenAPI, request: CoreRequest) -> bool:
         described = True
