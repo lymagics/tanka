@@ -1,3 +1,4 @@
+import pytest
 from hamcrest import assert_that, contains_exactly, empty, equal_to
 
 from tanka.cookies import Cookies
@@ -49,4 +50,16 @@ def test_finds_nothing_without_flash_cookie():
         list(Flashes(Cookies("session=abc; theme=dark"))),
         empty(),
         "Flashes must be empty when no flash cookie exists",
+    )
+
+
+# TODO: Bug: Flashes crashes on forged flash cookie. See PR #37
+@pytest.mark.skip(
+    reason="Bug: Flashes crashes on forged flash cookie. See PR #37"
+)
+def test_ignores_flash_cookie_that_is_not_json():
+    assert_that(
+        list(Flashes(Cookies("flash=%7Bbroken; theme=dark"))),
+        empty(),
+        "Flashes must ignore a flash cookie forged by the client",
     )
