@@ -53,9 +53,11 @@ def test_finds_nothing_without_flash_cookie():
     )
 
 
-# TODO: Bug: Flashes crashes on forged flash cookie. See PR #37
+# TODO: Bug: Flashes crashes on forged flash cookie.
+# https://github.com/lymagics/tanka/pull/44
 @pytest.mark.skip(
-    reason="Bug: Flashes crashes on forged flash cookie. See PR #37"
+    reason="Bug: Flashes crashes on forged flash cookie. See PR #44 "
+    "https://github.com/lymagics/tanka/pull/44"
 )
 def test_ignores_flash_cookie_that_is_not_json():
     assert_that(
