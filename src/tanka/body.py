@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, AsyncIterator
 from typing import Any
 
+from tanka.abort import Abort
 from tanka.headers import Headers
 
 
@@ -181,3 +182,22 @@ class Gzipped(Body):
             if piece := engine.compress(chunk):
                 yield piece
         yield engine.flush()
+
+
+class Capped(Body):
+    def __init__(self, origin: Body, limit: int):
+        self.origin = origin
+        self.limit = limit
+
+    def headers(self) -> Headers:
+        return self.origin.headers()
+
+    async def chunks(self) -> AsyncIterator[bytes]:
+        total = 0
+        async for chunk in self.origin.chunks():
+            total += len(chunk)
+            if total > self.limit:
+                raise Abort(
+                    413, f"Request body is larger than {self.limit} bytes"
+                )
+            yield chunk

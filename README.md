@@ -68,7 +68,7 @@ asyncio.run(
 15. [Error Handling](#15-error-handling)
 16. [CORS](#16-cors)
 17. [Compression](#17-compression)
-18. [Timeouts](#18-timeouts)
+18. [Timeouts and Body Limits](#18-timeouts-and-body-limits)
 19. [OpenAPI](#19-openapi)
 20. [Logging](#20-logging)
 21. [Testing Your Application](#21-testing-your-application)
@@ -817,7 +817,7 @@ body behind it and can be used on its own.
 
 ---
 
-## 18. Timeouts
+## 18. Timeouts and Body Limits
 
 `Timeout` wraps an endpoint and gives it a deadline in seconds. If the
 endpoint does not answer in time, the request ends with `504 Gateway
@@ -844,6 +844,17 @@ The wrapped endpoint is cancelled once the deadline is passed, so a stuck
 database call or external request stops consuming the worker. `Timeout`
 raises `Abort(504, ...)`, which `Catch` and `On` handle like any other
 error.
+
+`Bounded` wraps an endpoint and caps the request body in bytes. The body is
+counted while it streams, so the request ends with `413 Content Too Large`
+as soon as the limit is passed, before the rest is read into memory. A body
+within the limit, or one the endpoint never reads, passes through unchanged.
+
+```python
+Route(Post(), "/upload", Bounded(UploadPhoto(...), 5_000_000))
+```
+
+`Capped` is the body behind it and can wrap any `Body` on its own.
 
 ---
 

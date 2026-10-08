@@ -24,6 +24,7 @@ from tanka.auth import (
 )
 from tanka.body import (
     Body,
+    Capped,
     Empty,
     File,
     Gzipped,
@@ -33,6 +34,7 @@ from tanka.body import (
     Stream,
     Text,
 )
+from tanka.bounded import Bounded
 from tanka.catch import (
     Catch,
     Code,
@@ -127,6 +129,8 @@ __all__ = [
     "Authenticated",
     "Authorized",
     "Body",
+    "Bounded",
+    "Capped",
     "Catch",
     "Code",
     "Codes",
