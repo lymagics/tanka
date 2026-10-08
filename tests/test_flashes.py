@@ -53,15 +53,29 @@ def test_finds_nothing_without_flash_cookie():
     )
 
 
-# TODO: Bug: Flashes crashes on forged flash cookie.
-# https://github.com/lymagics/tanka/pull/44
-@pytest.mark.skip(
-    reason="Bug: Flashes crashes on forged flash cookie. See PR #44 "
-    "https://github.com/lymagics/tanka/pull/44"
-)
 def test_ignores_flash_cookie_that_is_not_json():
     assert_that(
         list(Flashes(Cookies("flash=%7Bbroken; theme=dark"))),
         empty(),
         "Flashes must ignore a flash cookie forged by the client",
+    )
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "flash=%7B%7D",
+        "flash=%5B%22text%22%2C%20%22kind%22%5D",
+        "flash=%22%E2%98%83%22",
+        "flash=null",
+        "flash=%7B%22text%22%3A%20%22only%22%7D",
+        "flash=%7B%22text%22%3A%207%2C%20%22kind%22%3A%20%22alert%22%7D",
+        "flash=%7B%22text%22%3A%20%22y%22%2C%20%22kind%22%3A%20%5B%5D%7D",
+    ],
+)
+def test_ignores_flash_cookie_without_text_and_kind(header):
+    assert_that(
+        list(Flashes(Cookies(header))),
+        empty(),
+        f"Flashes must ignore the forged flash cookie {header!r}",
     )
