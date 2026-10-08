@@ -92,5 +92,18 @@ class Flashes:
     def __iter__(self) -> Iterator[Flash]:
         for name, value in self.cookies:
             if name == "flash":
-                data = json.loads(unquote(value))
-                yield Flash(data["text"], Named(data["kind"]))
+                yield from self._parsed(value)
+
+    def _parsed(self, value: str) -> list[Flash]:
+        try:
+            data = json.loads(unquote(value))
+        except ValueError:
+            data = None
+        found = []
+        if (
+            isinstance(data, dict)
+            and isinstance(data.get("text"), str)
+            and isinstance(data.get("kind"), str)
+        ):
+            found = [Flash(data["text"], Named(data["kind"]))]
+        return found
