@@ -3,6 +3,7 @@ import json
 import pathlib
 import shutil
 
+import pytest
 from hamcrest import (
     assert_that,
     calling,
@@ -376,4 +377,40 @@ async def test_passes_valid_response_with_vendor_json_media_type():
         ).status(),
         equal_to(200),
         "OpenApi must parse a +json response body as JSON",
+    )
+
+
+# TODO: Bug: OpenApi drops blank query values, https://github.com/lymagics/tanka/pull/53
+@pytest.mark.skip(
+    reason="Bug: OpenApi drops blank query values, "
+    "https://github.com/lymagics/tanka/pull/53"
+)
+async def test_passes_blank_query_value_allowed_by_specification():
+    document = {
+        "openapi": "3.0.3",
+        "info": {"title": "Blank", "version": "1.0.0"},
+        "paths": {
+            "/find": {
+                "get": {
+                    "parameters": [
+                        {
+                            "name": "term",
+                            "in": "query",
+                            "required": True,
+                            "schema": {"type": "string"},
+                        }
+                    ],
+                    "responses": {"200": {"description": "OK"}},
+                }
+            }
+        },
+    }
+    assert_that(
+        (
+            await OpenApi(document, Echo()).response(
+                Request(Get(), "/find?term=", Headers(), Empty())
+            )
+        ).status(),
+        equal_to(200),
+        "OpenApi must accept a blank value for a required query parameter",
     )
