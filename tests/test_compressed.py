@@ -245,3 +245,100 @@ async def test_serves_readable_text_over_asgi():
             equal_to("readable " * 100),
             "Compressed must serve a body the client can decode",
         )
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "image/png",
+        "IMAGE/JPEG",
+        "video/mp4",
+        "audio/ogg; codecs=opus",
+        "font/woff2",
+        "application/font-woff",
+        "application/zip",
+        "application/gzip",
+    ],
+)
+async def test_passes_incompressible_body_through(kind: str):
+    assert_that(
+        await Body.Smart(
+            (
+                await Compressed(
+                    Fixed(Response(Raw(b"\x89" * 2049, kind)))
+                ).response(asking("gzip"))
+            ).body()
+        ).bytes(),
+        equal_to(b"\x89" * 2049),
+        f"Compressed must not gzip a body of type '{kind}'",
+    )
+
+
+async def test_compresses_svg_image():
+    assert_that(
+        gzip.decompress(
+            await Body.Smart(
+                (
+                    await Compressed(
+                        Fixed(Response(Raw(b"<svg/>" * 99, "image/svg+xml")))
+                    ).response(asking("gzip"))
+                ).body()
+            ).bytes()
+        ),
+        equal_to(b"<svg/>" * 99),
+        "Compressed must gzip an SVG image, since it is text",
+    )
+
+
+async def test_passes_through_type_declared_by_reply_headers():
+    assert_that(
+        await Body.Smart(
+            (
+                await Compressed(
+                    Fixed(
+                        Response(
+                            200,
+                            Headers({"content-type": "video/webm"}),
+                            Raw(b"\x1a\x45" * 333, "text/plain"),
+                        )
+                    )
+                ).response(asking("gzip"))
+            ).body()
+        ).bytes(),
+        equal_to(b"\x1a\x45" * 333),
+        "Compressed must trust the content type of the reply headers first",
+    )
+
+
+async def test_compresses_any_type_with_empty_kinds():
+    assert_that(
+        gzip.decompress(
+            await Body.Smart(
+                (
+                    await Compressed(
+                        Fixed(Response(Raw(b"\xff\xd8" * 404, "image/jpeg"))),
+                        500,
+                        [],
+                    ).response(asking("gzip"))
+                ).body()
+            ).bytes()
+        ),
+        equal_to(b"\xff\xd8" * 404),
+        "Compressed must gzip every type when the kinds list is empty",
+    )
+
+
+async def test_passes_body_of_given_kind_through():
+    assert_that(
+        await Body.Smart(
+            (
+                await Compressed(
+                    Fixed(Response(Raw(b"%PDF" * 256, "application/pdf"))),
+                    10,
+                    [r"application/pdf"],
+                ).response(asking("gzip"))
+            ).body()
+        ).bytes(),
+        equal_to(b"%PDF" * 256),
+        "Compressed must not gzip a body of a given incompressible kind",
+    )

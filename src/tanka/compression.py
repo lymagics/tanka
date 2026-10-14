@@ -16,8 +16,21 @@ class Compressed(Endpoint):
 
     @dispatch
     def __init__(self, origin: Endpoint, minimum: int):
+        self.__init__(
+            origin,
+            minimum,
+            [
+                r"image/(?!svg\+xml$).+",
+                r"(video|audio|font)/.+",
+                r"application/(font-woff|zip|gzip)",
+            ],
+        )
+
+    @dispatch
+    def __init__(self, origin: Endpoint, minimum: int, kinds: list[str]):
         self.origin = origin
         self.minimum = minimum
+        self.kinds = kinds
 
     async def response(self, request: Request) -> Reply:
         reply = await self.origin.response(request)
@@ -39,6 +52,7 @@ class Compressed(Endpoint):
             if self._accepted(request)
             and not self._encoded(reply)
             and not self._small(reply)
+            and not self._incompressible(reply)
             else reply
         )
 
@@ -68,3 +82,14 @@ class Compressed(Endpoint):
             *reply.body().headers().values("content-length"),
         ]
         return any(int(length) < self.minimum for length in lengths[:1])
+
+    def _incompressible(self, reply: Reply) -> bool:
+        types = [
+            *reply.headers().values("content-type"),
+            *reply.body().headers().values("content-type"),
+        ]
+        return any(
+            re.fullmatch(kind, mime.split(";")[0].strip().lower())
+            for mime in types[:1]
+            for kind in self.kinds
+        )
