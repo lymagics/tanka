@@ -802,12 +802,23 @@ Tanka(
 ```
 
 A reply is compressed when the request carries `accept-encoding` with
-`gzip` (or `*`), the body is at least 500 bytes long and no
-`content-encoding` is set already. Every other reply passes through
-untouched. The second argument changes the minimum size:
+`gzip` (or `*`), the body is at least 500 bytes long, no
+`content-encoding` is set already and the `content-type` is not an
+already compressed format: images (except SVG), video, audio, fonts and
+zip or gzip archives. Every other reply passes through untouched. The
+second argument changes the minimum size:
 
 ```python
 Compressed(Routes(...), 2048)
+```
+
+The third argument replaces the list of incompressible content types. Each
+entry is a regular expression matched against the whole media type; an
+empty list compresses every type:
+
+```python
+Compressed(Routes(...), 500, [r"image/.+", r"application/pdf"])
+Compressed(Routes(...), 500, [])
 ```
 
 A compressed reply sends `content-encoding: gzip` and `vary:
