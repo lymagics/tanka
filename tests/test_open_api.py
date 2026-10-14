@@ -3,7 +3,6 @@ import json
 import pathlib
 import shutil
 
-import pytest
 from hamcrest import (
     assert_that,
     calling,
@@ -380,12 +379,6 @@ async def test_passes_valid_response_with_vendor_json_media_type():
     )
 
 
-# TODO: Bug: OpenApi drops blank query values,
-# https://github.com/lymagics/tanka/pull/53
-@pytest.mark.skip(
-    reason="Bug: OpenApi drops blank query values, "
-    "https://github.com/lymagics/tanka/pull/53"
-)
 async def test_passes_blank_query_value_allowed_by_specification():
     document = {
         "openapi": "3.0.3",
@@ -398,6 +391,7 @@ async def test_passes_blank_query_value_allowed_by_specification():
                             "name": "term",
                             "in": "query",
                             "required": True,
+                            "allowEmptyValue": True,
                             "schema": {"type": "string"},
                         }
                     ],
