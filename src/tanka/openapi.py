@@ -44,7 +44,10 @@ class CoreRequest:
             data,
             RequestParameters(
                 query=ImmutableMultiDict(
-                    parse_qsl(str(request.target().query()))
+                    parse_qsl(
+                        str(request.target().query()),
+                        keep_blank_values=True,
+                    )
                 ),
                 header=WerkzeugHeaders(list(request.headers())),
                 cookie=ImmutableMultiDict(list(request.cookies())),
