@@ -12,7 +12,7 @@ gates:
     ask: >-
       `phrase` is what the test claims and `source` is its body. Does
       `assertion` check something other than what `phrase` claims?
-    fail_above: 0.9
+    fail_above: 0.7
 
   - id: failure-message-disagrees-with-name
     rule: testing.md 1.3
@@ -22,14 +22,14 @@ gates:
       `phrase` is what the test claims. `message` is the text shown when the
       test fails. Does `message` describe a different behaviour, or a
       different object, than `phrase`?
-    fail_above: 0.9
+    fail_above: 0.7
 
   - id: test-weakened
     rule: testing.md 7.1
     scope: changed_test
     state: [before, after]
     ask: Does `after` check less than `before` did?
-    fail_above: 0.8
+    fail_above: 0.7
 
   - id: behaviour-changed-without-tests
     rule: testing.md 7.2
@@ -40,7 +40,7 @@ gates:
       `subject` and `message` describe the commit and `diff` is its change.
       Does `diff` change how the code behaves while `tests` shows no test
       for it?
-    fail_above: 0.9
+    fail_above: 0.7
 
   - id: class-named-after-a-doer
     rule: eo.md 2.1
@@ -50,7 +50,7 @@ gates:
     ask: >-
       Does the class name `name` end in -er or -or and describe what its
       objects do rather than what they are?
-    fail_above: 0.85
+    fail_above: 0.7
 
   - id: builder-named-as-a-verb
     rule: eo.md 2.2
@@ -59,21 +59,21 @@ gates:
     ask: >-
       `returns` is the declared return type of `name`. Is `returns` a type
       other than None while `name` is a verb?
-    fail_above: 0.9
+    fail_above: 0.7
 
   - id: swallowed-exception
     rule: eo.md 9.2
     scope: catch
     state: [handler]
     ask: Does `handler` drop the error without logging, rethrowing or returning it?
-    fail_above: 0.9
+    fail_above: 0.7
 
   - id: error-text-hides-what-failed
     rule: eo.md 9.2
     scope: throw
     state: [message]
     ask: Does `message` fail to tell the reader what went wrong?
-    fail_above: 0.9
+    fail_above: 0.7
 
   - id: code-commented-out
     scope: hunk
@@ -81,4 +81,4 @@ gates:
     ask: >-
       Comparing `before` with `after` in `path`, does the change turn working
       code into a comment instead of deleting it?
-    fail_above: 0.85
+    fail_above: 0.7
