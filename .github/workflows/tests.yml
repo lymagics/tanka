@@ -19,9 +19,10 @@ jobs:
       - uses: astral-sh/setup-uv@v10.3.0
         with:
           python-version: ${{ matrix.python }}
-      - name: Install dependencies
-        run: uv sync --locked
       - name: Unit tests
-        run: make unit
+        uses: lymagics/aka-midori@v0.0.2
+        with:
+          install: uv sync --locked
+          test: make unit
       - name: Deep tests
         run: make deep
