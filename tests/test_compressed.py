@@ -342,3 +342,23 @@ async def test_passes_body_of_given_kind_through():
         equal_to(b"%PDF" * 256),
         "Compressed must not gzip a body of a given incompressible kind",
     )
+
+
+# TODO: Bug: no vary header on a reply that was not compressed
+# https://github.com/lymagics/tanka/pull/66
+@pytest.mark.skip(
+    reason="Bug: no vary header on a reply that was not compressed"
+    " https://github.com/lymagics/tanka/pull/66"
+)
+async def test_tells_caches_to_vary_even_when_client_declines_gzip():
+    assert_that(
+        (
+            await Compressed(Fixed(Response(Text("w" * 654)))).response(
+                Request(Get(), "/", Headers(), Empty())
+            )
+        )
+        .headers()
+        .values("vary"),
+        equal_to(["accept-encoding"]),
+        "Compressed must send vary on a plain reply too",
+    )
