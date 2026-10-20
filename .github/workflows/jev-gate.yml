@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: lymagics/jev-gate@v0.0.3
+      - uses: lymagics/jev-gate@v0.0.4
         with:
           config: .github/jev-gates.yml
           mode: diff
