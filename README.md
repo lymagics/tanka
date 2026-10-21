@@ -514,6 +514,24 @@ Routes(
 `GET /static/css/app.css` serves `./public/css/app.css`. A folder serves its
 `index.html`. Paths that escape the root or point to nothing end with `404`.
 
+`Cached` wraps an endpoint and lets browsers reuse what they already have.
+Every `200` reply gets an `etag` computed from its content and a
+`cache-control` header. A `GET` or `HEAD` request whose `if-none-match`
+holds that etag (or `*`) gets `304` with an empty body instead.
+
+```python
+Mount("/static", Cached(Static(Directory("./public"))))
+Mount("/static", Cached(Static(Directory("./public")), 86400))
+Mount("/static", Cached(Static(Directory("./public")), "public, immutable"))
+```
+
+With no second argument the reply carries `cache-control: no-cache`, so the
+browser keeps a copy and checks it on every use. A number of seconds sends
+`max-age`; a string is sent as is. Replies with any other status pass
+through untouched. The etag needs the whole body, so `Cached` reads it into
+memory. Put it outside `Compressed`, as `Cached(Compressed(...))`, so the
+plain and gzipped variants get different etags.
+
 Other sources are added by implementing `Files`, without touching `Static`.
 
 ```python
