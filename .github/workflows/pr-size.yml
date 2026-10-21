@@ -1,0 +1,33 @@
+name: pr-size
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-size-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: codelytv/pr-size-labeler@v1.9.0
+        with:
+          xs_max_size: '10'
+          s_max_size: '50'
+          m_max_size: '150'
+          l_max_size: '251'
+          fail_if_xl: 'true'
+          message_if_xl: >
+            This PR changes more than 250 lines, not counting dependency lock files.
+            Please split it into smaller PRs.
+          files_to_ignore: >
+            uv.lock */uv.lock
+            poetry.lock */poetry.lock
+            requirements*.txt */requirements*.txt
+            package-lock.json */package-lock.json
