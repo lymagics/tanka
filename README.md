@@ -823,8 +823,10 @@ Compressed(Routes(...), 500, [])
 
 A compressed reply sends `content-encoding: gzip` and `vary:
 accept-encoding`, drops `content-length` and streams compressed chunks, so
-large files and streams are never buffered in memory. `Gzipped` is the
-body behind it and can be used on its own.
+large files and streams are never buffered in memory. A reply that could be
+compressed but goes out plain, because the client does not accept gzip,
+still sends `vary: accept-encoding`, so shared caches keep both variants
+apart. `Gzipped` is the body behind it and can be used on its own.
 
 ---
 
