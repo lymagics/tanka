@@ -6,7 +6,7 @@ from tanka.body import Gzipped
 from tanka.endpoint import Endpoint
 from tanka.headers import Headers
 from tanka.request import Request
-from tanka.response import Reply, Response
+from tanka.response import Reply, Response, WithHeaders
 
 
 class Compressed(Endpoint):
@@ -35,25 +35,33 @@ class Compressed(Endpoint):
     async def response(self, request: Request) -> Reply:
         reply = await self.origin.response(request)
         return (
-            Response(
-                reply.status(),
-                Headers(
-                    [
-                        *[
-                            pair
-                            for pair in reply.headers()
-                            if pair[0].lower() != "content-length"
-                        ],
-                        ("vary", "accept-encoding"),
-                    ]
-                ),
-                Gzipped(reply.body()),
+            (
+                Response(
+                    reply.status(),
+                    Headers(
+                        [
+                            *[
+                                pair
+                                for pair in reply.headers()
+                                if pair[0].lower() != "content-length"
+                            ],
+                            ("vary", "accept-encoding"),
+                        ]
+                    ),
+                    Gzipped(reply.body()),
+                )
+                if self._accepted(request)
+                else WithHeaders(reply, Headers([("vary", "accept-encoding")]))
             )
-            if self._accepted(request)
-            and not self._encoded(reply)
+            if self._compressible(reply)
+            else reply
+        )
+
+    def _compressible(self, reply: Reply) -> bool:
+        return (
+            not self._encoded(reply)
             and not self._small(reply)
             and not self._incompressible(reply)
-            else reply
         )
 
     def _accepted(self, request: Request) -> bool:

@@ -344,12 +344,6 @@ async def test_passes_body_of_given_kind_through():
     )
 
 
-# TODO: Bug: no vary header on a reply that was not compressed
-# https://github.com/lymagics/tanka/pull/66
-@pytest.mark.skip(
-    reason="Bug: no vary header on a reply that was not compressed"
-    " https://github.com/lymagics/tanka/pull/66"
-)
 async def test_tells_caches_to_vary_even_when_client_declines_gzip():
     assert_that(
         (
