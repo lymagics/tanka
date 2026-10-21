@@ -160,6 +160,18 @@ class File(Body):
                 yield chunk
 
 
+class Buffered(Body):
+    def __init__(self, origin: Body, data: bytes):
+        self.origin = origin
+        self.data = data
+
+    def headers(self) -> Headers:
+        return self.origin.headers()
+
+    async def chunks(self) -> AsyncIterator[bytes]:
+        yield self.data
+
+
 class Gzipped(Body):
     def __init__(self, origin: Body):
         self.origin = origin

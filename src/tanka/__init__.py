@@ -24,6 +24,7 @@ from tanka.auth import (
 )
 from tanka.body import (
     Body,
+    Buffered,
     Capped,
     Empty,
     File,
@@ -35,6 +36,7 @@ from tanka.body import (
     Text,
 )
 from tanka.bounded import Bounded
+from tanka.caching import Cached
 from tanka.catch import (
     Catch,
     Code,
@@ -130,6 +132,8 @@ __all__ = [
     "Authorized",
     "Body",
     "Bounded",
+    "Buffered",
+    "Cached",
     "Capped",
     "Catch",
     "Code",
