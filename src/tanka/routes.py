@@ -41,10 +41,11 @@ class Route(Rule):
         )
 
     def _parsed(self, request: Request) -> object:
-        return parse(
-            self.pattern,
-            str(request.target().path()),
-            case_sensitive=True,
+        path = str(request.target().path())
+        return (
+            parse(self.pattern, path, case_sensitive=True)
+            if path.count("/") == self.pattern.count("/")
+            else None
         )
 
 

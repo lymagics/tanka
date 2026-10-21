@@ -1,6 +1,5 @@
 import json
 
-import pytest
 from hamcrest import assert_that, equal_to, has_entry, is_
 
 from fakes import Echo, Fixed
@@ -133,12 +132,6 @@ async def test_keeps_identity_of_request():
     )
 
 
-# TODO: Bug: path parameter matches across slashes
-# https://github.com/lymagics/tanka/pull/65
-@pytest.mark.skip(
-    reason="Bug: path parameter matches across slashes"
-    " https://github.com/lymagics/tanka/pull/65"
-)
 def test_rejects_path_with_extra_segments_after_parameter():
     assert_that(
         Route(Get(), "/orders/{ref}", Echo()).matches(
