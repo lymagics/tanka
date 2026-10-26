@@ -40,6 +40,16 @@ def test_rejects_longer_segment():
     )
 
 
+async def test_matches_nested_paths_when_prefix_is_root():
+    assert_that(
+        Mount("/", Echo()).matches(
+            Request(Get(), "/orders/7", Headers(), Empty())
+        ),
+        is_(True),
+        "Mount must match paths under the root prefix '/'",
+    )
+
+
 async def test_dispatches_bare_prefix_to_nested_root_route():
     assert_that(
         (
