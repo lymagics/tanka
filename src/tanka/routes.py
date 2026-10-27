@@ -74,7 +74,8 @@ class Mount(Rule):
 
     def matches(self, request: Request) -> bool:
         path = str(request.target().path())
-        return path == self.prefix or path.startswith(f"{self.prefix}/")
+        prefix = self.prefix.rstrip("/")
+        return path == (prefix or self.prefix) or path.startswith(f"{prefix}/")
 
     async def response(self, request: Request) -> Reply:
         return await self.endpoint.response(
@@ -82,7 +83,10 @@ class Mount(Rule):
                 request.method(),
                 Target(
                     Path(
-                        str(request.target().path())[len(self.prefix) :] or "/"
+                        str(request.target().path())[
+                            len(self.prefix.rstrip("/")) :
+                        ]
+                        or "/"
                     ),
                     request.target().query(),
                 ),
