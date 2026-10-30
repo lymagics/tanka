@@ -27,7 +27,7 @@ jobs:
       - env:
           BASE: ${{ github.event.pull_request.base.sha }}
         run: git show "$BASE:.github/jev-gates.yml" > "$RUNNER_TEMP/jev-gates.yml"
-      - uses: lymagics/jev-gate@v0.0.4
+      - uses: lymagics/jev-gate@v0.0.5
         with:
           config: ${{ runner.temp }}/jev-gates.yml
           mode: diff
