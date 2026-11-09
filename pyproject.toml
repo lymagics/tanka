@@ -27,7 +27,7 @@ dev = [
     "pytest==9.2.0",
     "pytest-asyncio==1.4.1.post1",
     "pytest-cov==7.1.0",
-    "pytest-randomly==5.0.0",
+    "pytest-randomly==5.1.0",
     "pytest-fail-slow==0.6.0",
     "pytest-repeat==0.9.4",
     "pyhamcrest==2.1.0",
