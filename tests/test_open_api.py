@@ -3,14 +3,17 @@ import json
 import pathlib
 import shutil
 
+import pytest
 from hamcrest import (
     assert_that,
     calling,
     contains_string,
     equal_to,
     has_entry,
+    has_item,
     has_length,
     has_properties,
+    is_not,
     raises,
 )
 
@@ -22,7 +25,7 @@ from tanka.headers import Headers
 from tanka.method import Get, Post
 from tanka.openapi import OpenApi
 from tanka.request import Request
-from tanka.response import Reply, Response
+from tanka.response import Redirect, Reply, Response
 
 
 def specification(title: str) -> dict:
@@ -408,4 +411,39 @@ async def test_passes_blank_query_value_allowed_by_specification():
         ).status(),
         equal_to(200),
         "OpenApi must accept a blank value for a required query parameter",
+    )
+
+
+# TODO: Bug: OpenApi adds an empty content-type to a reply without one,
+# see PRURL
+@pytest.mark.skip(
+    reason="Bug: OpenApi adds an empty content-type to a reply without"
+    " one, see PRURL"
+)
+async def test_adds_no_content_type_to_reply_without_one():
+    assert_that(
+        (
+            await OpenApi(
+                {
+                    "openapi": "3.0.3",
+                    "info": {"title": "Detour", "version": "0.0.9"},
+                    "paths": {
+                        "/detour": {
+                            "get": {
+                                "responses": {
+                                    "302": {"description": "Moved away"}
+                                }
+                            }
+                        }
+                    },
+                },
+                Fixed(Redirect("/elsewhere-λ")),
+            ).response(Request(Get(), "/detour", Headers(), Empty()))
+        )
+        .body()
+        .headers()
+        .values("content-type"),
+        is_not(has_item("")),
+        "OpenApi must not invent an empty content-type for a reply"
+        " that had none",
     )
