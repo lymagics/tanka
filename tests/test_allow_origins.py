@@ -1,4 +1,4 @@
-from hamcrest import assert_that, empty, equal_to
+from hamcrest import assert_that, empty, equal_to, has_item
 
 from tanka.body import Empty
 from tanka.cors import AllowOrigins
@@ -73,4 +73,16 @@ def test_stays_silent_without_origin():
         ),
         empty(),
         "AllowOrigins must add nothing to a same-origin request",
+    )
+
+
+def test_varies_on_origin_when_request_has_no_origin():
+    assert_that(
+        AllowOrigins("https://cache.example")
+        .headers(Request(Get(), "/feed", Headers(), Empty()))
+        .values("vary"),
+        has_item("Origin"),
+        "AllowOrigins with listed origins must send Vary: Origin even"
+        " without an Origin header, or shared caches serve the reply"
+        " without CORS headers to allowed origins",
     )
