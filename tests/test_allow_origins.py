@@ -78,10 +78,10 @@ def test_stays_silent_without_origin():
 
 
 # TODO: Bug: no Vary: Origin when the request has no Origin header,
-# see PRURL
+# see https://github.com/lymagics/tanka/pull/92
 @pytest.mark.skip(
     reason="Bug: no Vary: Origin when the request has no Origin header,"
-    " see PRURL"
+    " see https://github.com/lymagics/tanka/pull/92"
 )
 def test_varies_on_origin_when_request_has_no_origin():
     assert_that(
