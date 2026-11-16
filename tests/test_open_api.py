@@ -415,10 +415,10 @@ async def test_passes_blank_query_value_allowed_by_specification():
 
 
 # TODO: Bug: OpenApi adds an empty content-type to a reply without one,
-# see PRURL
+# see https://github.com/lymagics/tanka/pull/93
 @pytest.mark.skip(
     reason="Bug: OpenApi adds an empty content-type to a reply without"
-    " one, see PRURL"
+    " one, see https://github.com/lymagics/tanka/pull/93"
 )
 async def test_adds_no_content_type_to_reply_without_one():
     assert_that(
