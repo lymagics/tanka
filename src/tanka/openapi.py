@@ -16,7 +16,7 @@ from werkzeug.datastructures import Headers as WerkzeugHeaders
 from werkzeug.datastructures import ImmutableMultiDict
 
 from tanka.abort import Abort
-from tanka.body import Html, Json, Raw
+from tanka.body import Buffered, Html, Json, Raw
 from tanka.endpoint import Endpoint
 from tanka.request import Request
 from tanka.response import Reply, Response
@@ -225,7 +225,7 @@ class OpenApi(Endpoint):
         return Response(
             reply.status(),
             reply.headers(),
-            Raw(data, CoreResponse(reply, data).content_type),
+            Buffered(reply.body(), data),
         )
 
     def _docs(self) -> str:
