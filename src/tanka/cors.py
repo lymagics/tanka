@@ -36,12 +36,14 @@ class AllowOrigins(Policy):
         origin = "".join(request.headers().values("origin")[:1])
         if origin and "*" in self.origins:
             result = Headers({"access-control-allow-origin": "*"})
+        elif "*" in self.origins:
+            result = Headers()
         elif origin in self.origins:
             result = Headers(
                 {"access-control-allow-origin": origin, "vary": "Origin"}
             )
         else:
-            result = Headers()
+            result = Headers({"vary": "Origin"})
         return result
 
 

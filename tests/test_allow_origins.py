@@ -1,4 +1,3 @@
-import pytest
 from hamcrest import assert_that, empty, equal_to, has_item
 
 from tanka.body import Empty
@@ -50,20 +49,39 @@ def test_uses_wildcard_for_any_origin():
     )
 
 
-def test_stays_silent_for_unlisted_origin():
+def test_withholds_allow_origin_from_unlisted_origin():
     assert_that(
-        list(
-            AllowOrigins("https://ok.example").headers(
-                Request(
-                    Get(),
-                    "/",
-                    Headers({"origin": "https://evil.example"}),
-                    Empty(),
-                )
+        AllowOrigins("https://ok.example")
+        .headers(
+            Request(
+                Get(),
+                "/",
+                Headers({"origin": "https://evil.example"}),
+                Empty(),
             )
-        ),
+        )
+        .values("access-control-allow-origin"),
         empty(),
-        "AllowOrigins must add nothing for an unlisted origin",
+        "AllowOrigins must not allow an unlisted origin",
+    )
+
+
+def test_varies_on_origin_for_unlisted_origin():
+    assert_that(
+        AllowOrigins("https://shelf.example")
+        .headers(
+            Request(
+                Get(),
+                "/books?page=-1",
+                Headers({"origin": "https://stranger.example:8443"}),
+                Empty(),
+            )
+        )
+        .values("vary"),
+        has_item("Origin"),
+        "AllowOrigins with listed origins must send Vary: Origin to an"
+        " unlisted origin, or shared caches serve that reply to allowed"
+        " origins",
     )
 
 
@@ -77,12 +95,6 @@ def test_stays_silent_without_origin():
     )
 
 
-# TODO: Bug: no Vary: Origin when the request has no Origin header,
-# see https://github.com/lymagics/tanka/pull/95
-@pytest.mark.skip(
-    reason="Bug: no Vary: Origin when the request has no Origin header,"
-    " see https://github.com/lymagics/tanka/pull/95"
-)
 def test_varies_on_origin_when_request_has_no_origin():
     assert_that(
         AllowOrigins("https://cache.example")
