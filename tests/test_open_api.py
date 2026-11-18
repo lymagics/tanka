@@ -3,7 +3,6 @@ import json
 import pathlib
 import shutil
 
-import pytest
 from hamcrest import (
     assert_that,
     calling,
@@ -414,12 +413,6 @@ async def test_passes_blank_query_value_allowed_by_specification():
     )
 
 
-# TODO: Bug: OpenApi adds an empty content-type to a reply without one,
-# see https://github.com/lymagics/tanka/pull/96
-@pytest.mark.skip(
-    reason="Bug: OpenApi adds an empty content-type to a reply without"
-    " one, see https://github.com/lymagics/tanka/pull/96"
-)
 async def test_adds_no_content_type_to_reply_without_one():
     assert_that(
         (
