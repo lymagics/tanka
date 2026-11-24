@@ -1,8 +1,12 @@
 import asyncio
 
+import httpx
+import pytest
 from hamcrest import assert_that, calling, empty, equal_to, raises
 
-from fakes import Fixed
+from fakes import Failing, Fixed
+from tanka.abort import Abort
+from tanka.application import Silence, Tanka
 from tanka.body import Empty, Text
 from tanka.cors import AllowCredentials, AllowMethods, AllowOrigins, Cors
 from tanka.headers import Headers
@@ -188,3 +192,28 @@ async def test_adds_nothing_for_same_origin_request():
         empty(),
         "Cors must leave a same-origin response untouched",
     )
+
+
+async def test_allows_listed_origin_to_read_error_reply():
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(
+            app=Tanka(
+                Cors(
+                    Failing(Abort(422, "Ünprocessable órder")),
+                    AllowOrigins("https://shop.example:8443"),
+                ),
+                Silence(),
+            ).asgi()
+        ),
+        base_url="http://api.example",
+    ) as http:
+        assert_that(
+            (
+                await http.post(
+                    "/orders",
+                    headers={"origin": "https://shop.example:8443"},
+                )
+            ).headers.get_list("access-control-allow-origin"),
+            equal_to(["https://shop.example:8443"]),
+            "Cors must let a listed origin read a reply that ends with Abort",
+        )
