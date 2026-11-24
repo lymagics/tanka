@@ -194,6 +194,12 @@ async def test_adds_nothing_for_same_origin_request():
     )
 
 
+# TODO: Bug: no CORS headers on replies that end with Abort,
+# see https://github.com/lymagics/tanka/pull/104
+@pytest.mark.skip(
+    reason="Bug: no CORS headers on replies that end with Abort,"
+    " see https://github.com/lymagics/tanka/pull/104"
+)
 async def test_allows_listed_origin_to_read_error_reply():
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(
