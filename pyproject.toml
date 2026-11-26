@@ -32,7 +32,7 @@ dev = [
     "pytest-repeat==0.9.4",
     "pyhamcrest==2.1.0",
     "hypothesis==6.170.15",
-    "httpx==0.28.1",
+    "httpx==0.29.0",
     "tanka[all]",
 ]
 
